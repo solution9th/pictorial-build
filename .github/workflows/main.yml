@@ -56,7 +56,7 @@ jobs:
     - name: Configure coscli
       run: |
         coscli config add \
-          --bucket ${{ BUC_NAME }} \
+          --bucket ${{ secrets.BUC_NAME }} \
           --region ap-beijing \
           --alias my-bucket
         coscli config set \
