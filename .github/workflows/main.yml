@@ -12,15 +12,39 @@ jobs:
     - name: Checkout Bitbucket repository
       run: |
         git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
+        
+    - uses: subosito/flutter-action@v2
+      name: 安装FLUTTER环境
+      with:
+        flutter-version: '3.27.1'
+        channel: 'stable'
+    - run: flutter clean && flutter pub get && cd macos/ && pod install
+      name: 安装依赖
+    
+    - uses: apple-actions/import-codesign-certs@v1
+      name: 安装P12_APPLICATION证书
+      with:
+        p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
+    
+    - uses: apple-actions/import-codesign-certs@v1
+      name: 安装P12_INSTALLER证书
+      with:
+        p12-file-base64: ${{ secrets.INSTALLER_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
 
     - name: Build project
       run: |
         echo "Building project..."
         mkdir -p dist
-        ls bitbucket-repo/
-        echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
-        echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
 
+        flutter build macos --release --no-tree-shake-icons
+
+        # 将/build/macos/Build/Products/Release/目录下的文件复制到dist目录下
+        cp -r build/macos/Build/Products/Release/* dist/
+
+        # echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
+        # echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
 
     - name: Install coscli
       run: |
@@ -40,4 +64,4 @@ jobs:
 
     - name: Upload to COS
       run: |
-        coscli cp dist/1.py cos://my-bucket/
+        coscli cp dist/* cos://my-bucket/
