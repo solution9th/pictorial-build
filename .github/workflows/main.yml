@@ -39,6 +39,7 @@ jobs:
     - name: Build project
       run: |
         echo "Building project..."
+        cd ..
         mkdir -p dist
 
         flutter build macos --release --no-tree-shake-icons
