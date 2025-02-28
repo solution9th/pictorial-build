@@ -69,4 +69,5 @@ jobs:
 
     - name: Upload to COS
       run: |
+        cd bitbucket-repo
         coscli cp dist/* cos://my-bucket/
