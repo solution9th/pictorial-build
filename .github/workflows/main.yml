@@ -70,4 +70,5 @@ jobs:
     - name: Upload to COS
       run: |
         cd bitbucket-repo
+        ls dist
         coscli cp "dist/*" "cos://my-bucket/"
