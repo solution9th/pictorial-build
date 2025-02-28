@@ -19,7 +19,7 @@ jobs:
       with:
         flutter-version: '3.27.1'
         channel: 'stable'
-    - run: flutter clean && flutter pub get && cd macos/ && pod install
+    - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
       name: 安装依赖
     
     - uses: apple-actions/import-codesign-certs@v1
