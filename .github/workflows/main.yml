@@ -39,7 +39,8 @@ jobs:
     - name: Build project
       run: |
         echo "Building project..."
-        cd ..
+        cd bitbucket-repo
+        ls
         mkdir -p dist
 
         flutter build macos --release --no-tree-shake-icons
