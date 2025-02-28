@@ -1,0 +1,43 @@
+name: macOS Build
+
+on:
+  repository_dispatch:
+    types: [bitbucket_push]
+
+jobs:
+  build:
+    runs-on: macos-latest 
+
+    steps:
+    - name: Checkout Bitbucket repository
+      run: |
+        git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
+
+    - name: Build project
+      run: |
+        echo "Building project..."
+        mkdir -p dist
+        ls bitbucket-repo/
+        echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
+        echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
+
+
+    - name: Install coscli
+      run: |
+        curl -sSL https://github.com/tencentyun/coscli/releases/download/v1.0.4/coscli-v1.0.4-darwin-arm64 -o coscli
+        sudo mv coscli /usr/local/bin/coscli
+        chmod +x /usr/local/bin/coscli
+
+    - name: Configure coscli
+      run: |
+        coscli config add \
+          --bucket ${{ BUC_NAME }} \
+          --region ap-beijing \
+          --alias my-bucket
+        coscli config set \
+          --secret_id ${{ secrets.SEC_ID }} \
+          --secret_key ${{ secrets.SEC_K }} 
+
+    - name: Upload to COS
+      run: |
+        coscli cp dist/1.py cos://my-bucket/
