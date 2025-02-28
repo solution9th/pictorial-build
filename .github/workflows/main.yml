@@ -2,6 +2,7 @@ name: macOS Build
 
 on:
   repository_dispatch:
+    branches: [feature/dev]
     types: [bitbucket_push]
 
 jobs:
