@@ -22,12 +22,16 @@ jobs:
     - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
       name: 安装依赖
     
-    - uses: apple-actions/import-codesign-certs@v1
-      name: 安装P12_APPLICATION证书
-      with:
-        p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
-        p12-password: ${{ secrets.P12_PASSWORD }}
-        keychain: 'macos-application-keychain'
+    # - uses: apple-actions/import-codesign-certs@v1
+    #   name: 安装P12_APPLICATION证书
+    #   with:
+    #     p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
+    #     p12-password: ${{ secrets.P12_PASSWORD }}
+    #     keychain: 'macos-application-keychain'
+
+    - run: |
+        echo $APPLICATION_BASE64 | base64 --decode > application.p12
+        security import application.p12 -k ${{secrets.IDENTITY_NAME}} -P "$P12_PASSWORD" -T /usr/bin/codesign
     
     - uses: apple-actions/import-codesign-certs@v3
       name: 安装P12_INSTALLER证书
@@ -70,15 +74,12 @@ jobs:
         # 确定DMG名称
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
 
-        # 解锁钥匙串
-        security unlock-keychain -p "${{ secrets.P12_PASSWORD }}" ~/Library/Keychains/macos-application-keychain-db
-        security unlock-keychain -p "${{ secrets.P12_PASSWORD }}" ~/Library/Keychains/macos-installer-keychain-db
-
         # 应用签名
-        codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" --keychain ~/Library/Keychains/macos-application-keychain-db -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        # codesign -f -o runtime -s "macos-application-keychain" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
 
         # 生成钥匙串密码凭证
-        xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --password "${{secrets.ACCOUNT_PASSWORD}}"
+        xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --passwrod "${{secrets.ACCOUNT_PASSWORD}}"
 
         # 将应用程序复制到临时目录
         cp -R "$OUTPUT_DIR/$APP_NAME.app" "$DMG_DIR" || exit 1
@@ -103,7 +104,7 @@ jobs:
 
         # 检查DMG是否创建成功
         if [ -f "$DMG_PATH" ]; then
-            # 将.dmg文件复制到dist目录下
+            # 将/build/macos/Build/Products/Release/目录下的文件复制到dist目录下
             cp "$DMG_PATH" dist/
         else
             echo "Failed to create DMG"
