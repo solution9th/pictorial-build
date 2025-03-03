@@ -71,4 +71,4 @@ jobs:
       run: |
         cd bitbucket-repo
         ls dist
-        coscli cp "dist/*" "cos://my-bucket/"
+        coscli cp "dist/" "cos://my-bucket/" -r
