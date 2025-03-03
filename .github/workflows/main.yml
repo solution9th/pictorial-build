@@ -39,6 +39,7 @@ jobs:
         p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
         keychain: 'macos-application-keychain'
+        create-keychain: false
     
     - run : |
         security find-identity -v
