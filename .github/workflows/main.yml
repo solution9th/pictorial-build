@@ -22,29 +22,16 @@ jobs:
     # - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
     #   name: 安装依赖
     
-   
-    - uses: apple-actions/import-codesign-certs@v3
-      name: 安装P12_INSTALLER证书
-      with:
-        p12-file-base64: ${{ secrets.INSTALLER_BASE64 }}
-        p12-password: ${{ secrets.P12_PASSWORD }}
-        keychain: 'macos-installer-keychain'
-      
-    - run : |
-        security find-identity -v
 
     - uses: apple-actions/import-codesign-certs@v1
-      name: 安装P12_APPLICATION证书
+      name: 安装APP证书
       with:
-        p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
+        p12-file-base64: ${{ secrets.APP_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
-        keychain: 'macos-application-keychain'
-        create-keychain: false
     
     - run : |
         security find-identity -v
   
-
     - name: Build project
       run: |
         echo "Building project..."
