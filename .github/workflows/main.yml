@@ -46,7 +46,8 @@ jobs:
         flutter build macos --release --no-tree-shake-icons
 
         # 将/build/macos/Build/Products/Release/目录下的文件复制到dist目录下
-        cp -r build/macos/Build/Products/Release/* dist/
+        # cp -r build/macos/Build/Products/Release/* dist/
+        cp -r build/macos/Build/Products/Release/*.app dist/
 
         # echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
         # echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
