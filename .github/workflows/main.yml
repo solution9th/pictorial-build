@@ -46,6 +46,7 @@ jobs:
         flutter build macos --release --no-tree-shake-icons
 
         # 确定输出目录
+        # OUTPUT_DIR="$PROJECT_DIR/build/macos/Build/Products/Release"
         OUTPUT_DIR="build/macos/Build/Products/Release"
 
         # 创建临时目录
@@ -69,7 +70,7 @@ jobs:
         codesign -f -o runtime -s ${{secrets.IDENTITY_NAME}} -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
 
         # 生成钥匙串密码凭证
-        xcrun notarytool store-credentials 'pictorial' --apple-id ${{secrets.USER_NAME}} --team-id ${{secrets.TEAM_ID}} --password ${{secrets.ACCOUNT_PASSWORD}}
+        xcrun notarytool store-credentials 'pictorial' --apple-id ${{secrets.USER_NAME}} --team-id ${{secrets.TEAM_ID}} --passwrod ${{secrets.ACCOUNT_PASSWORD}}
 
         # 将应用程序复制到临时目录
         cp -R "$OUTPUT_DIR/$APP_NAME.app" "$DMG_DIR" || exit 1
@@ -91,12 +92,18 @@ jobs:
 
         # 检查DMG是否创建成功
         if [ -f "$DMG_PATH" ]; then
-            # 将.dmg文件复制到dist目录下
+            # 将/build/macos/Build/Products/Release/目录下的文件复制到dist目录下
             cp "$DMG_PATH" dist/
         else
             echo "Failed to create DMG"
             exit 1
         fi
+
+        # 删除构建产物
+        # rm -rf "$OUTPUT_DIR"
+
+        # echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
+        # echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
 
     - name: Install coscli
       run: |
@@ -118,4 +125,4 @@ jobs:
       run: |
         cd bitbucket-repo
         ls dist
-        coscli cp "dist/*.dmg" "cos://my-bucket/"
+        coscli cp "dist/" "cos://my-bucket/" -r
