@@ -10,17 +10,17 @@ jobs:
     runs-on: macos-latest 
 
     steps:
-    # - name: Checkout Bitbucket repository
-    #   run: |
-    #     git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
+    - name: Checkout Bitbucket repository
+      run: |
+        git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
         
-    # - uses: subosito/flutter-action@v2
-    #   name: 安装FLUTTER环境
-    #   with:
-    #     flutter-version: '3.27.1'
-    #     channel: 'stable'
-    # - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
-    #   name: 安装依赖
+    - uses: subosito/flutter-action@v2
+      name: 安装FLUTTER环境
+      with:
+        flutter-version: '3.27.1'
+        channel: 'stable'
+    - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
+      name: 安装依赖
     
 
     - uses: apple-actions/import-codesign-certs@v1
@@ -40,10 +40,6 @@ jobs:
         mkdir -p dist
 
         flutter build macos --release --no-tree-shake-icons
-
-        echo ">>>>>1"
-        security find-identity -v
-        echo ">>>>>2"
 
         # 确定输出目录
         PROJECT_DIR=$(pwd)
@@ -68,7 +64,6 @@ jobs:
 
         # 应用签名
         codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
-        # codesign -f -o runtime -s "macos-application-keychain" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
 
         # 生成钥匙串密码凭证
         xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --passwrod "${{secrets.ACCOUNT_PASSWORD}}"
