@@ -139,7 +139,7 @@ jobs:
         -d '{
               "msgtype": "text",
               "text": {
-                "content": "构建成功: DMG: ${{ secrets.COS_HOST }}/${{ env.DMG_NAME }}"
+                "content": "构建成功: ${{ secrets.COS_HOST }}/${{ env.DMG_NAME }}"
               }
             }'
 
