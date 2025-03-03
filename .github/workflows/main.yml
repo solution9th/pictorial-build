@@ -28,9 +28,8 @@ jobs:
     #     p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
     #     p12-password: ${{ secrets.P12_PASSWORD }}
     #     keychain: 'macos-application-keychain'
-
     - run: |
-        echo ${{ secrets.APPLICATION_BASE64 }} | base64 --decode > application.p12
+        echo "${{ secrets.APPLICATION_BASE64 }}" | base64 --decode > application.p12
         security import application.p12 -k ${{secrets.IDENTITY_NAME}} -P "$P12_PASSWORD" -T /usr/bin/codesign
     
     - uses: apple-actions/import-codesign-certs@v3
