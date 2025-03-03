@@ -29,12 +29,12 @@ jobs:
         p12-password: ${{ secrets.P12_PASSWORD }}
         keychain: 'macos-application-keychain'
     
-    - uses: apple-actions/import-codesign-certs@v3
-      name: 安装P12_INSTALLER证书
-      with:
-        p12-file-base64: ${{ secrets.INSTALLER_BASE64 }}
-        p12-password: ${{ secrets.P12_PASSWORD }}
-        keychain: 'macos-installer-keychain'
+    # - uses: apple-actions/import-codesign-certs@v3
+    #   name: 安装P12_INSTALLER证书
+    #   with:
+    #     p12-file-base64: ${{ secrets.INSTALLER_BASE64 }}
+    #     p12-password: ${{ secrets.P12_PASSWORD }}
+    #     keychain: 'macos-installer-keychain'
 
     - name: Build project
       run: |
