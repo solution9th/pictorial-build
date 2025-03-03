@@ -51,14 +51,14 @@ jobs:
 
         # 创建临时目录
         DMG_DIR="$OUTPUT_DIR/dmg_temp"
-        if [[ -d $DMG_DIR ]]; then
+        if [[ -d "$DMG_DIR" ]]; then
             rm -rf "${DMG_DIR:?}/"*
         else
             mkdir -p "$DMG_DIR"
         fi
 
         # 获取应用程序名称
-        APP_NAME=$(echo $OUTPUT_DIR/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
+        APP_NAME=$(echo "$OUTPUT_DIR"/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
 
         # 获取当前时间
         CURRENT_TIME=$(date "+%Y%m%d_%H%M")
@@ -67,10 +67,10 @@ jobs:
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
 
         # 应用签名
-        codesign -f -o runtime -s ${{secrets.IDENTITY_NAME}} -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
 
         # 生成钥匙串密码凭证
-        xcrun notarytool store-credentials 'pictorial' --apple-id ${{secrets.USER_NAME}} --team-id ${{secrets.TEAM_ID}} --passwrod ${{secrets.ACCOUNT_PASSWORD}}
+        xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --passwrod "${{secrets.ACCOUNT_PASSWORD}}"
 
         # 将应用程序复制到临时目录
         cp -R "$OUTPUT_DIR/$APP_NAME.app" "$DMG_DIR" || exit 1
