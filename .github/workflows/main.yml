@@ -22,7 +22,7 @@ jobs:
     - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
       name: 安装依赖
     
-    - uses: apple-actions/import-codesign-certs@v3
+    - uses: apple-actions/import-codesign-certs@v1
       name: 安装P12_APPLICATION证书
       with:
         p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
