@@ -57,7 +57,8 @@ jobs:
         APP_NAME=$(echo "$OUTPUT_DIR"/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
 
         # 获取当前时间
-        CURRENT_TIME=$(date "+%Y%m%d_%H%M")
+        # CURRENT_TIME=$(date "+%Y%m%d_%H%M")
+        CURRENT_TIME=$(date +%s)
 
         # 确定DMG名称
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
@@ -125,3 +126,27 @@ jobs:
         cd bitbucket-repo
         ls dist
         coscli cp "dist/" "cos://my-bucket/" -r
+
+    - name: Send success notification to WeChat
+      if: success()
+      run: |
+        curl -X POST "${{ secrets.WECHAT_HOOK }}" \
+        -H 'Content-Type: application/json' \
+        -d '{
+              "msgtype": "text",
+              "text": {
+                "content": "构建成功: DMG: ${{ env.DMG_NAME }}"
+              }
+            }'
+
+    - name: Send failure notification to WeChat
+      if: failure()
+      run: |
+        curl -X POST "${{ secrets.WECHAT_HOOK }}" \
+        -H 'Content-Type: application/json' \
+        -d '{
+              "msgtype": "text",
+              "text": {
+                "content": "构建失败"
+              }
+            }'
