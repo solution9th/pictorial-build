@@ -67,7 +67,8 @@ jobs:
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
 
         # 应用签名
-        codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        # codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        codesign -f -o runtime -s "macos-application-keychain" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
 
         # 生成钥匙串密码凭证
         xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --passwrod "${{secrets.ACCOUNT_PASSWORD}}"
