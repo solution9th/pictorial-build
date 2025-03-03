@@ -62,6 +62,7 @@ jobs:
 
         # 确定DMG名称
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
+        echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
 
         # 应用签名
         codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
