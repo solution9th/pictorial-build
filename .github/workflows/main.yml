@@ -45,7 +45,9 @@ jobs:
 
         flutter build macos --release --no-tree-shake-icons
 
+        echo ">>>>>1"
         security find-identity -v
+        echo ">>>>>2"
 
         # 确定输出目录
         PROJECT_DIR=$(pwd)
