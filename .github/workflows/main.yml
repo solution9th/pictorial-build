@@ -10,34 +10,37 @@ jobs:
     runs-on: macos-latest 
 
     steps:
-    - name: Checkout Bitbucket repository
-      run: |
-        git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
+    # - name: Checkout Bitbucket repository
+    #   run: |
+    #     git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
         
-    - uses: subosito/flutter-action@v2
-      name: 安装FLUTTER环境
-      with:
-        flutter-version: '3.27.1'
-        channel: 'stable'
-    - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
-      name: 安装依赖
-    
-    # - uses: apple-actions/import-codesign-certs@v1
-    #   name: 安装P12_APPLICATION证书
+    # - uses: subosito/flutter-action@v2
+    #   name: 安装FLUTTER环境
     #   with:
-    #     p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
-    #     p12-password: ${{ secrets.P12_PASSWORD }}
-    #     keychain: 'macos-application-keychain'
-    - run: |
-        echo "${{ secrets.APPLICATION_BASE64 }}" | base64 --decode > application.p12
-        security import application.p12 -k "${{secrets.IDENTITY_NAME}}" -P "$P12_PASSWORD" -T /usr/bin/codesign
+    #     flutter-version: '3.27.1'
+    #     channel: 'stable'
+    # - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
+    #   name: 安装依赖
     
+    - uses: apple-actions/import-codesign-certs@v1
+      name: 安装P12_APPLICATION证书
+      with:
+        p12-file-base64: ${{ secrets.APPLICATION_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
+        keychain: 'macos-application-keychain'
+    
+    - run : |
+        security find-identity -v
+   
     - uses: apple-actions/import-codesign-certs@v3
       name: 安装P12_INSTALLER证书
       with:
         p12-file-base64: ${{ secrets.INSTALLER_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
         keychain: 'macos-installer-keychain'
+      
+    - run : |
+        security find-identity -v
 
     - name: Build project
       run: |
