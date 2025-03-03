@@ -2,7 +2,10 @@ name: macOS Build
 
 on:
   repository_dispatch:
-    branches: [feature/dev]
+    # 分支为feature/dev和master时触发
+    branches:
+      - feature/dev
+      - master
     types: [bitbucket_push]
 
 jobs:
