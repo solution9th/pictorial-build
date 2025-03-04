@@ -24,15 +24,6 @@ jobs:
     - name: Add Bitbucket to known hosts
       run: ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
     
-    - name: Install Rust
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        source $HOME/.cargo/env
-        rustup update stable
-
-    - name: Install Rinf CLI
-      run: cargo install rinf
-    
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
@@ -55,6 +46,17 @@ jobs:
         echo "Building project..."
         cd bitbucket-repo
         mkdir -p dist
+
+        curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+
+        # 安装rinf
+        cargo install rinf
+
+        # 构建 Protobuf 消息
+        rinf message
+
+        # 构建 macos platform
+        dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
 
         flutter build macos --release --no-tree-shake-icons
 
