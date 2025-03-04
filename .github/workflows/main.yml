@@ -23,15 +23,27 @@ jobs:
         ssh-private-key: ${{ secrets.BITBUCKET_SSH_KEY }}
     - name: Add Bitbucket to known hosts
       run: ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
+
     
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
         flutter-version: '3.27.1'
         channel: 'stable'
-    - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
-      name: 安装依赖
+    - name: 安装依赖
+      run: |
+        # 安装rust
+        curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 
+        # 安装rinf
+        cargo install rinf
+
+        # 构建 Protobuf 消息
+        rinf message
+
+        # 确定输出目录
+        cd bitbucket-repo && dart run build_runner build --define "platform_builder:platform_builder=platform=macos" && flutter clean && flutter pub get && cd macos/ && pod install        
+      
     - uses: apple-actions/import-codesign-certs@v1
       name: 安装APP证书
       with:
@@ -41,36 +53,11 @@ jobs:
     - run : |
         security find-identity -v
 
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: 1.83.0
-        override: true
-        components: rustfmt, clippy
-
     - name: Build project
       run: |
         echo "Building project..."
         cd bitbucket-repo
         mkdir -p dist
-
-        # 安装 protoc
-        PROTOC_ZIP=protoc-21.12-osx-x86_64.zip
-        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
-        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
-        rm -f $PROTOC_ZIP
-
-        rustc --version
-
-        # 安装rinf
-        cargo install rinf
-
-        # 构建 Protobuf 消息
-        rinf message
-
-        # 构建 macos platform
-        dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
 
         flutter build macos --release --no-tree-shake-icons
 
