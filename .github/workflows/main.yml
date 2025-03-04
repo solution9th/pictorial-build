@@ -48,6 +48,14 @@ jobs:
         mkdir -p dist
 
         curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+        source $HOME/.cargo/env
+        rustup update stable
+
+        PROTOC_ZIP=protoc-21.12-osx-x86_64.zip
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
+        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+        rm -f $PROTOC_ZIP
 
         # 安装rinf
         cargo install rinf
