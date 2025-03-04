@@ -24,6 +24,15 @@ jobs:
     - name: Add Bitbucket to known hosts
       run: ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
     
+    - name: Install Rust
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        source $HOME/.cargo/env
+        rustup update stable
+
+    - name: Install Rinf CLI
+      run: cargo install rinf
+    
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
