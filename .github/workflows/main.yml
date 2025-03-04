@@ -40,17 +40,21 @@ jobs:
     
     - run : |
         security find-identity -v
-  
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.83.0
+        override: true
+        components: rustfmt, clippy
+
     - name: Build project
       run: |
         echo "Building project..."
         cd bitbucket-repo
         mkdir -p dist
 
-        curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
-        source $HOME/.cargo/env
-        rustup update stable
-
+        # 安装 protoc
         PROTOC_ZIP=protoc-21.12-osx-x86_64.zip
         curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
         sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
@@ -64,9 +68,6 @@ jobs:
 
         # 构建 Protobuf 消息
         rinf message
-
-        # 更新依赖项
-        dart pub upgrade
 
         # 构建 macos platform
         dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
