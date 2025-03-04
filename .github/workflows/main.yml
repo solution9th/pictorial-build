@@ -44,13 +44,18 @@ jobs:
 
         # 安装rinf
         cargo install rinf
-
+        
         # 构建 Protobuf 消息
+        cd bitbucket-repo
         rinf message
 
         # 确定输出目录
-        cd bitbucket-repo && dart run build_runner build --define "platform_builder:platform_builder=platform=macos" && flutter clean && flutter pub get && cd macos/ && pod install        
-      
+        dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
+        flutter clean
+        flutter pub get
+        cd macos/
+        pod install
+        
     - uses: apple-actions/import-codesign-certs@v1
       name: 安装APP证书
       with:
