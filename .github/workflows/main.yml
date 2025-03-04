@@ -17,6 +17,13 @@ jobs:
       run: |
         git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
         
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.BITBUCKET_SSH_KEY }}
+    - name: Add Bitbucket to known hosts
+      run: ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
+    
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
@@ -24,7 +31,6 @@ jobs:
         channel: 'stable'
     - run: cd bitbucket-repo && flutter clean && flutter pub get && cd macos/ && pod install
       name: 安装依赖
-    
 
     - uses: apple-actions/import-codesign-certs@v1
       name: 安装APP证书
