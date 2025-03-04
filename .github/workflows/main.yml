@@ -57,6 +57,8 @@ jobs:
         sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
         rm -f $PROTOC_ZIP
 
+        rustc --version
+
         # 安装rinf
         cargo install rinf
 
