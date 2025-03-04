@@ -24,7 +24,6 @@ jobs:
     - name: Add Bitbucket to known hosts
       run: ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 
-    
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
@@ -34,6 +33,14 @@ jobs:
       run: |
         # 安装rust
         curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+        source $HOME/.cargo/env
+
+        # 安装 protoc
+        PROTOC_ZIP=protoc-21.12-osx-x86_64.zip
+        curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
+        sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
+        sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
+        rm -f $PROTOC_ZIP
 
         # 安装rinf
         cargo install rinf
@@ -113,7 +120,7 @@ jobs:
 
         # 检查DMG是否创建成功
         if [ -f "$DMG_PATH" ]; then
-            # 将/build/macos/Build/Products/Release/目录下的文件复制到dist目录下
+            # 将.dmg文件复制到dist目录下
             cp "$DMG_PATH" dist/
         else
             echo "Failed to create DMG"
