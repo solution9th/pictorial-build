@@ -134,7 +134,7 @@ jobs:
       run: |
         cd bitbucket-repo
         ls dist
-        coscli cp "dist/" "cos://my-bucket/" -r
+        coscli cp "dist/" "cos://my-bucket/" -r --progress
 
     - name: Send success notification to WeChat
       if: success()
