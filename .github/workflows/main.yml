@@ -51,13 +51,14 @@ jobs:
 
         # 输出目录及文件及其子目录
         find . -type f -print
-        
-        # 确定输出目录
-        dart run build_runner clean
+
+        rm -rf ~/.pub-cache
         rm -rf .dart_tool
+
+        # 确定输出目录
+        dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
         flutter clean
         flutter pub get
-        dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
         cd macos/
         pod install
         
