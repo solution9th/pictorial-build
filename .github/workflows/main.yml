@@ -47,7 +47,7 @@ jobs:
         cd bitbucket-repo
         mkdir -p dist
 
-        curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+        curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 
         # 安装rinf
         cargo install rinf
