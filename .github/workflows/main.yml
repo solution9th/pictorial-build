@@ -86,17 +86,13 @@ jobs:
         # 获取应用程序名称
         APP_NAME=$(echo "$OUTPUT_DIR"/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
         
-        # 获取当前时间
-        # CURRENT_TIME=$(date "+%Y%m%d_%H%M")
-        CURRENT_TIME=$(date +%s)
-        
-        # 确定DMG名称
-        DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
-        echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
-
         # 获取tag
         TAG="${GITHUB_REF#refs/tags/}"
         echo "TAG=$TAG" >> $GITHUB_ENV
+
+        # 确定DMG名称
+        DMG_NAME="${APP_NAME}_${TAG}.dmg"
+        echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
         
         # 应用签名
         codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
