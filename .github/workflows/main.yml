@@ -1,12 +1,9 @@
 name: macOS Build
 
 on:
-  repository_dispatch:
-    # 分支为feature/dev和master时触发
-    branches:
-      - feature/dev
-      - master
-    types: [bitbucket_push]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -15,7 +12,7 @@ jobs:
     steps:
     - name: Checkout Bitbucket repository
       run: |
-        git clone ${{ secrets.BITBUCKET_URL }} bitbucket-repo
+        git clone -b master --single-branch --depth 1 ${{ secrets.BITBUCKET_URL }} bitbucket-repo
         
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
@@ -29,6 +26,7 @@ jobs:
       with:
         flutter-version: '3.27.1'
         channel: 'stable'
+
     - name: 安装依赖
       run: |
         # 安装rust
@@ -49,123 +47,102 @@ jobs:
         cd bitbucket-repo
         rinf message
 
-        # 输出目录及文件及其子目录
-        find . -type f -print
-
-        rm -rf ~/.pub-cache
-        rm -rf .dart_tool
-
         # 确定输出目录
         dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
         flutter clean
         flutter pub get
         cd macos/
         pod install
-        
+
     - uses: apple-actions/import-codesign-certs@v1
       name: 安装APP证书
       with:
         p12-file-base64: ${{ secrets.APP_BASE64 }}
         p12-password: ${{ secrets.P12_PASSWORD }}
-    
-    - run : |
-        security find-identity -v
+
+    # - run: |
+    #     security find-identity -v
 
     - name: Build project
       run: |
         echo "Building project..."
         cd bitbucket-repo
         mkdir -p dist
-
+        
         flutter build macos --release --no-tree-shake-icons
-
+        
         # 确定输出目录
         PROJECT_DIR=$(pwd)
         OUTPUT_DIR="$PROJECT_DIR/build/macos/Build/Products/Release"
-
+        
         # 创建临时目录
         DMG_DIR="$OUTPUT_DIR/dmg_temp"
         if [[ -d "$DMG_DIR" ]]; then
-            rm -rf "${DMG_DIR:?}/"*
+         rm -rf "${DMG_DIR:?}/"*
         else
-            mkdir -p "$DMG_DIR"
+         mkdir -p "$DMG_DIR"
         fi
-
+        
         # 获取应用程序名称
         APP_NAME=$(echo "$OUTPUT_DIR"/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
-
+        
         # 获取当前时间
         # CURRENT_TIME=$(date "+%Y%m%d_%H%M")
         CURRENT_TIME=$(date +%s)
-
+        
         # 确定DMG名称
         DMG_NAME="${APP_NAME}_${CURRENT_TIME}.dmg"
         echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
 
+        # 获取tag
+        TAG="${GITHUB_REF#refs/tags/}"
+        echo "TAG=$TAG" >> $GITHUB_ENV
+        
         # 应用签名
         codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
-
+        
         # 生成钥匙串密码凭证
         xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --password "${{secrets.ACCOUNT_PASSWORD}}"
-
+        
         # 将应用程序复制到临时目录
         cp -R "$OUTPUT_DIR/$APP_NAME.app" "$DMG_DIR" || exit 1
-
+        
         # 确定DMG路径
         DMG_PATH="$OUTPUT_DIR/$DMG_NAME"
-
-        # 输出DMG路径
-        echo ">>>>>> DMG path: $DMG_PATH"
-
+        echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
+        
         # 创建DMG文件
         hdiutil create -volname 'Pictorial' -srcfolder "$DMG_DIR" -ov -format UDZO "$DMG_PATH"
-
+        
         # 提交到公证服务
         xcrun notarytool submit "$DMG_PATH" --keychain-profile "pictorial" --wait --no-s3-acceleration
-
+        
         # 注入公证信息
         xcrun stapler staple "$DMG_PATH"
-
+        
         # 删除临时目录
         rm -rf "$DMG_DIR"
-
-        # 检查DMG是否创建成功
-        if [ -f "$DMG_PATH" ]; then
-            # 将.dmg文件复制到dist目录下
-            cp "$DMG_PATH" dist/
-        else
-            echo "Failed to create DMG"
-            exit 1
+    
+    # 检查 ${{ env.DMG_PATH }} 是否存在
+    - name: Check DMG file
+      run: |
+        if [ ! -f "${{ env.DMG_PATH }}" ]; then
+          echo "DMG file not found"
+          exit 1
         fi
 
-        # 删除构建产物
-        # rm -rf "$OUTPUT_DIR"
-
-        # echo "Build artifact 1" > dist/artifact1.txt  # 模拟构建产物
-        # echo "Build artifact 2" > dist/artifact2.txt  # 模拟构建产物
-
-    - name: Install coscli
-      run: |
-        curl -sSL https://github.com/tencentyun/coscli/releases/download/v1.0.4/coscli-v1.0.4-darwin-arm64 -o coscli
-        sudo mv coscli /usr/local/bin/coscli
-        chmod +x /usr/local/bin/coscli
-
-    - name: Configure coscli
-      run: |
-        coscli config add \
-          --bucket ${{ secrets.BUC_NAME }} \
-          --region ap-beijing \
-          --alias my-bucket
-        coscli config set \
-          --secret_id ${{ secrets.SEC_ID }} \
-          --secret_key ${{ secrets.SEC_K }} 
-
-    - name: Upload to COS
-      run: |
-        cd bitbucket-repo
-        ls dist
-        coscli cp "dist/" "cos://my-bucket/" -r --progress
-
+    # 4. 发布 DMG 到 Release
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "${{ env.DMG_PATH }}"
+        name: "Auto Release ${{ github.sha }}"
+        body: "DMG package for commit ${{ github.sha }}"
+        draft: false
+        prerelease: true  # 标记为预发布
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        
     - name: Send success notification to WeChat
       if: success()
       run: |
@@ -174,7 +151,7 @@ jobs:
         -d '{
               "msgtype": "text",
               "text": {
-                "content": "构建成功: ${{ secrets.COS_HOST }}/${{ env.DMG_NAME }}"
+                "content": "构建成功: ${{ secrets.FILE_URL }}/${{ env.TAG }}/${{ env.DMG_NAME }}"
               }
             }'
 
