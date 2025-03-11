@@ -108,7 +108,29 @@ jobs:
         echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
         
         # 创建DMG文件
-        hdiutil create -volname 'Pictorial' -srcfolder "$DMG_DIR" -ov -format UDZO "$DMG_PATH"
+        # hdiutil create -volname 'Pictorial' -srcfolder "$DMG_DIR" -ov -format UDZO "$DMG_PATH"
+        # 创建空的DMG文件
+        hdiutil create -size ${TARGET_SIZE}m -fs APFS -volname "$APP_NAME" -srcfolder "$DMG_DIR" -ov -format UDRW "$DMG_PATH"
+
+        # 挂载 DMG
+        MOUNT_POINT="/Volumes/$APP_NAME"
+        hdiutil attach "$DMG_PATH" -mountpoint "$MOUNT_POINT"
+
+        # 创建符号链接
+        ln -s /Applications /Volumes/"$APP_NAME"
+
+        # 卸载 DMG
+        hdiutil detach "$MOUNT_POINT"
+
+        # 转换为只读 DMG
+        hdiutil convert "$DMG_PATH" -format UDZO -o "${DMG_PATH%.dmg}-tmp.dmg"
+
+        # 删除原始可写 DMG
+        rm -rf "$DMG_PATH"
+
+        # 重命名最终 DMG 文件
+        mv "${DMG_PATH%.dmg}-tmp.dmg" "$DMG_PATH"
+        echo "DMG 创建完成: $DMG_PATH"
         
         # 提交到公证服务
         xcrun notarytool submit "$DMG_PATH" --keychain-profile "pictorial" --wait --no-s3-acceleration
