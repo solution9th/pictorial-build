@@ -95,7 +95,7 @@ jobs:
         echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
         
         # 应用签名
-        codesign -f -o runtime -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
+        codesign -f -o runtime --entitlements ./macos/Runner/Release.entitlements -s "${{secrets.IDENTITY_NAME}}" -v "${OUTPUT_DIR}/${APP_NAME}.app" --deep
         
         # 生成钥匙串密码凭证
         xcrun notarytool store-credentials 'pictorial' --apple-id "${{secrets.USER_NAME}}" --team-id "${{secrets.TEAM_ID}}" --password "${{secrets.ACCOUNT_PASSWORD}}"
