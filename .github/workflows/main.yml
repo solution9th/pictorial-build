@@ -85,6 +85,13 @@ jobs:
         
         # 获取应用程序名称
         APP_NAME=$(echo "$OUTPUT_DIR"/*.app | awk -F 'Release/' '{print $2}' | awk -F .app '{print $1}')
+
+        # 应用程序大小
+        APP_SIZE=$(du -sm $OUTPUT_DIR/*.app | awk '{print $1}')
+        echo "App Size: ${APP_SIZE}M"
+
+        # 计算目标大小，APP_SIZE + 5MB
+        TARGET_SIZE=$((APP_SIZE + 5))
         
         # 获取tag
         TAG="${GITHUB_REF#refs/tags/}"
