@@ -41,7 +41,7 @@ jobs:
         rm -f $PROTOC_ZIP
 
         # 安装rinf
-        cargo install rinf
+        cargo install rinf --version 7.1.0
         
         # 构建 Protobuf 消息
         cd bitbucket-repo
