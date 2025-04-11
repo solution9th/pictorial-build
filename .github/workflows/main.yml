@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest 
+    runs-on: macos-15
 
     steps:
     - name: Checkout Bitbucket repository
@@ -31,6 +31,8 @@ jobs:
       run: |
         # 安装rust
         curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+        rustup install 1.82.0
+        rustup default 1.82.0
         source $HOME/.cargo/env
 
         # 安装 protoc
@@ -41,7 +43,7 @@ jobs:
         rm -f $PROTOC_ZIP
 
         # 安装rinf
-        cargo install rinf --version 7.3.0
+        cargo install rinf --version 7.1.0
         
         # 构建 Protobuf 消息
         cd bitbucket-repo
@@ -49,6 +51,12 @@ jobs:
 
         # 打印protobuf版本
         protoc --version
+
+        # 打印rust版本
+        rustc --version
+
+        # 打印cargo版本
+        cargo --version
 
         # 确定输出目录
         dart run build_runner build --define "platform_builder:platform_builder=platform=macos"
