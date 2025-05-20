@@ -3,7 +3,7 @@ name: macOS Build
 on:
   push:
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   build:
@@ -173,7 +173,14 @@ jobs:
     - name: Send success notification to WeChat
       if: success()
       run: |
-        curl -X POST "${{ secrets.WECHAT_HOOK }}" \
+        # 检查tag是否以v开头
+        if [[ "${{ env.TAG }}" == v* ]]; then
+          WEBHOOK="${{ secrets.WECHAT_HOOK }}"
+        else
+          WEBHOOK="${{ secrets.WECHAT_HOOK_TEST }}"
+        fi
+        
+        curl -X POST "$WEBHOOK" \
         -H 'Content-Type: application/json' \
         -d '{
               "msgtype": "text",
@@ -185,7 +192,14 @@ jobs:
     - name: Send failure notification to WeChat
       if: failure()
       run: |
-        curl -X POST "${{ secrets.WECHAT_HOOK }}" \
+        # 检查tag是否以v开头
+        if [[ "${{ env.TAG }}" == v* ]]; then
+          WEBHOOK="${{ secrets.WECHAT_HOOK }}"
+        else
+          WEBHOOK="${{ secrets.WECHAT_HOOK_TEST }}"
+        fi
+        
+        curl -X POST "$WEBHOOK" \
         -H 'Content-Type: application/json' \
         -d '{
               "msgtype": "text",
