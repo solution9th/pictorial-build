@@ -10,6 +10,12 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - name: Set TAG environment variable
+      run: |
+        TAG="${GITHUB_REF#refs/tags/}"
+        echo "TAG=$TAG" >> $GITHUB_ENV
+        echo "Setting TAG to $TAG"
+
     - name: Checkout Bitbucket repository
       run: |
         git clone -b master --single-branch --depth 1 ${{ secrets.BITBUCKET_URL }} bitbucket-repo
@@ -95,10 +101,6 @@ jobs:
         # 计算目标大小，APP_SIZE + 5MB
         TARGET_SIZE=$((APP_SIZE + 5))
         
-        # 获取tag
-        TAG="${GITHUB_REF#refs/tags/}"
-        echo "TAG=$TAG" >> $GITHUB_ENV
-
         # 确定DMG名称
         DMG_NAME="${APP_NAME}_${TAG}.dmg"
         echo "DMG_NAME=$DMG_NAME" >> $GITHUB_ENV
