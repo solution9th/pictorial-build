@@ -30,7 +30,7 @@ jobs:
     - uses: subosito/flutter-action@v2
       name: 安装FLUTTER环境
       with:
-        flutter-version: '3.27.1'
+        flutter-version: '3.29.3'
         channel: 'stable'
 
     - name: 安装依赖
